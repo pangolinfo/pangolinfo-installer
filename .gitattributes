@@ -1,0 +1,16 @@
+# Shell scripts run on POSIX — MUST be LF, never CRLF.
+*.sh   text eol=lf
+*.bash text eol=lf
+
+# PowerShell handles both, but keep LF for consistency.
+*.ps1  text eol=lf
+
+# Markdown / config — LF in repo, native in working tree.
+*.md   text eol=lf
+*.json text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.toml text eol=lf
+
+# Default: text auto, LF in repo.
+* text=auto eol=lf
