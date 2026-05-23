@@ -431,17 +431,37 @@ t() {
   esac
 }
 
-# Source agent path table（必须在脚本目录里找到）
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-if [ -f "${SCRIPT_DIR}/lib/agents.sh" ]; then
+# Source agent path table.
+# 两种运行模式:
+#   1. 本地 git clone 模式: $0 是 ./install.sh, lib/ 在脚本旁边. 直接 source.
+#   2. curl|sh 模式: $0 是 /dev/stdin 或类似, 没有 lib/. 从 install.pangolinfo.com
+#      拉同一 main 分支的 lib/agents.sh 到 /tmp 后 source.
+SCRIPT_DIR="$(cd "$(dirname "$0")" 2>/dev/null && pwd || true)"
+if [ -n "$SCRIPT_DIR" ] && [ -f "${SCRIPT_DIR}/lib/agents.sh" ]; then
+  # 本地模式
   . "${SCRIPT_DIR}/lib/agents.sh"
 else
-  # curl|sh 模式下脚本是 stdin，没法 source 文件——内联 fallback
-  # （生产部署时建议改为从 install.pangolinfo.com/install/agents.sh 下载）
-  echo "ERROR: lib/agents.sh not found at ${SCRIPT_DIR}/lib/" >&2
-  echo "When using 'curl | sh', download the full installer instead:" >&2
-  echo "  curl -fsSL install.pangolinfo.com/install.tar.gz | tar -xz && ./install.sh" >&2
-  exit 2
+  # curl|sh 模式 — 远程拉 lib/agents.sh
+  # 允许通过 PANGOLINFO_INSTALLER_BASE 环境变量覆盖,便于测试
+  AGENTS_URL="${PANGOLINFO_INSTALLER_BASE:-https://install.pangolinfo.com}/lib/agents.sh"
+  AGENTS_TMP="$(mktemp -t pangolinfo-agents.XXXXXX.sh 2>/dev/null || echo "/tmp/pangolinfo-agents-$$.sh")"
+  # cleanup on exit
+  trap 'rm -f "$AGENTS_TMP"' EXIT INT TERM
+  if ! curl -fsSL --max-time 30 "$AGENTS_URL" -o "$AGENTS_TMP" 2>/dev/null; then
+    echo "ERROR: failed to download lib/agents.sh from $AGENTS_URL" >&2
+    echo "Check your network connection or try cloning the repo and running ./install.sh locally:" >&2
+    echo "  git clone https://github.com/pangolinfo/pangolinfo-installer.git" >&2
+    echo "  cd pangolinfo-installer && ./install.sh ..." >&2
+    exit 20
+  fi
+  # 简单校验: 应该至少包含 agent_paths 函数定义
+  if ! grep -q 'agent_paths' "$AGENTS_TMP" 2>/dev/null; then
+    echo "ERROR: downloaded lib/agents.sh looks malformed (no agent_paths function)." >&2
+    echo "URL: $AGENTS_URL" >&2
+    exit 20
+  fi
+  . "$AGENTS_TMP"
+  SCRIPT_DIR=""  # 标记为远程模式,后续代码不要依赖 SCRIPT_DIR/../pangolinfo-skills 等
 fi
 
 # ---------------------------------------------------------------------------
