@@ -202,7 +202,7 @@ pwsh -c "[System.Management.Automation.Language.Parser]::ParseFile('install.ps1'
 
 - [pangolinfo-mcp](https://github.com/pangolinfo/pangolinfo-mcp) — MCP server 源码与 release
 - [pangolinfo-skills](https://github.com/pangolinfo/pangolinfo-skills) — Skills SOP 知识库 *(单独仓库,待发布)*
-- [API 文档](https://docs.pangolinfo.com) — 后端 scrape API 文档
+- [API 文档](https://docs.pangolinfo.com) — 后端 Scraper API 文档
 
 ---
 

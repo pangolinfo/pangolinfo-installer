@@ -194,7 +194,7 @@ For real runs use `HOME=/tmp/fakehome ./install.sh ...` so you don't pollute you
 
 - [pangolinfo-mcp](https://github.com/pangolinfo/pangolinfo-mcp) — MCP server source and releases
 - [pangolinfo-skills](https://github.com/pangolinfo/pangolinfo-skills) — Skills SOP knowledge base *(separate repo, TBD)*
-- [API docs](https://docs.pangolinfo.com) — Backend scrape API reference
+- [API docs](https://docs.pangolinfo.com) — Backend Scraper API reference
 
 ---
 
